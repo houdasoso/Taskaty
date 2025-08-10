@@ -1,53 +1,67 @@
-// controllers/taskController.js
+// Task controller - CRUD for tasks scoped to authenticated user
 const Task = require('../models/Task');
 
-// @desc    Get all tasks
-// @route   GET /api/tasks
+// Create task
+exports.createTask = async (req, res) => {
+  try {
+    const { title, description = '', deadline, status } = req.body;
+    if (!title) return res.status(400).json({ message: 'Title is required' });
+
+    const task = await Task.create({
+      user: req.userId,
+      title,
+      description,
+      deadline,
+      status
+    });
+
+    res.status(201).json(task);
+  } catch (err) {
+    console.error('Create task error:', err);
+    res.status(500).json({ message: 'Failed to create task' });
+  }
+};
+
+// Get tasks for logged-in user
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
-    res.status(200).json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    const tasks = await Task.find({ user: req.userId }).sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (err) {
+    console.error('Get tasks error:', err);
+    res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 };
 
-// @desc    Create a task
-// @route   POST /api/tasks
-exports.createTask = async (req, res) => {
-  const { title, description } = req.body;
-  try {
-    const newTask = await Task.create({ title, description });
-    res.status(201).json(newTask);
-  } catch (error) {
-    res.status(400).json({ message: 'Invalid task data' });
-  }
-};
-
-// @desc    Update a task
-// @route   PUT /api/tasks/:id
+// Update specific task (only owner can update)
 exports.updateTask = async (req, res) => {
   try {
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
+    const { id } = req.params;
+    const { title, description, deadline, status } = req.body;
+
+    const updated = await Task.findOneAndUpdate(
+      { _id: id, user: req.userId },
+      { title, description, deadline, status },
+      { new: true, runValidators: true }
     );
-    if (!updatedTask) return res.status(404).json({ message: 'Task not found' });
-    res.status(200).json(updatedTask);
-  } catch (error) {
-    res.status(500).json({ message: 'Update failed' });
+
+    if (!updated) return res.status(404).json({ message: 'Task not found or not authorized' });
+    res.json(updated);
+  } catch (err) {
+    console.error('Update task error:', err);
+    res.status(500).json({ message: 'Failed to update task' });
   }
 };
 
-// @desc    Delete a task
-// @route   DELETE /api/tasks/:id
+// Delete task (only owner)
 exports.deleteTask = async (req, res) => {
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-    if (!deletedTask) return res.status(404).json({ message: 'Task not found' });
-    res.status(200).json({ message: 'Task deleted' });
-  } catch (error) {
-    res.status(500).json({ message: 'Delete failed' });
+    const { id } = req.params;
+    const deleted = await Task.findOneAndDelete({ _id: id, user: req.userId });
+    if (!deleted) return res.status(404).json({ message: 'Task not found or not authorized' });
+    res.json({ message: 'Task deleted successfully' });
+  } catch (err) {
+    console.error('Delete task error:', err);
+    res.status(500).json({ message: 'Failed to delete task' });
   }
 };

@@ -1,16 +1,13 @@
-// routes/taskRoutes.js
+// Tasks routes - protected by authMiddleware
 const express = require('express');
 const router = express.Router();
-const {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} = require('../controllers/taskController');
+const { createTask, getTasks, updateTask, deleteTask } = require('../controllers/taskController');
+const auth = require('../middleware/authMiddleware');
+const validateObjectId = require('../middleware/validateObjectId');
 
-router.get('/', getTasks);
-router.post('/', createTask);
-router.put('/:id', updateTask);
-router.delete('/:id', deleteTask);
+router.post('/', auth, createTask);
+router.get('/', auth, getTasks);
+router.put('/:id', auth, validateObjectId, updateTask);
+router.delete('/:id', auth, validateObjectId, deleteTask);
 
 module.exports = router;

@@ -1,4 +1,9 @@
 # Getting Started with Create React App
+1. cd frontend
+2. npm install
+3. npm start
+App will run at http://localhost:3000 (CRA default)
+Make sure backend is running at http://localhost:5000
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

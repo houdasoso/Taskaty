@@ -1,23 +1,46 @@
-// src/App.js
-import React, { useState } from 'react';
-import CreateTask from './components/CreateTask';
-import TaskList from './components/TaskList';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Auth from './pages/Auth';
+import api from './utils/api';
 
-function App() {
-  const [refresh, setRefresh] = useState(false);
+// App-level: tries to load user (me) on start if token exists
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
 
-  // Triggered when a task is created
-  const handleTaskCreated = () => {
-    setRefresh(!refresh); // toggle to refresh task list
-  };
+  useEffect(() => {
+    const init = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) { setChecking(false); return; }
+
+      try {
+        const res = await api.get('/auth/me');
+        setUser(res.data);
+      } catch (err) {
+        console.warn('Token invalid or server unreachable');
+        localStorage.removeItem('token');
+      } finally {
+        setChecking(false);
+      }
+    };
+    init();
+  }, []);
+
+  if (checking) {
+    return <div className="container mt-5">Checking session...</div>;
+  }
 
   return (
-    <div className="App">
-      <h1>Taskaty - Task Manager</h1>
-      <CreateTask onTaskCreated={handleTaskCreated} />
-      <TaskList key={refresh} />
-    </div>
+    <BrowserRouter>
+      <Navbar user={user} setUser={setUser} />
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/auth" element={<Auth setUser={setUser} />} />
+          <Route path="/" element={user ? <Home user={user} /> : <Navigate to="/auth" />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
