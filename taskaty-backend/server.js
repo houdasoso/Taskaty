@@ -1,6 +1,4 @@
-// Entry point for backend
-// Sets up express, connects to MongoDB and registers routes.
-
+// Entry point for backend: configure express, connect to MongoDB, register routes.
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,7 +7,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 
-const app = express();
+const app = express(); // make app first
+
 app.use(cors());
 app.use(express.json()); // parse JSON bodies
 

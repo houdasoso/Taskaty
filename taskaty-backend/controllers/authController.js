@@ -3,12 +3,11 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Helper to generate token
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
-// Register endpoint (explicit register)
+// Explicit registration
 exports.register = async (req, res) => {
   try {
     const { name = '', email, password } = req.body;
@@ -28,9 +27,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login endpoint.
-// BEHAVIOR: If user not found -> auto-register and return a token.
-// If user exists -> verify password and return token.
+// Login: auto-register if not existing
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,7 +61,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// Me endpoint -> returns user profile (without password)
+// Me endpoint -> profile (no password)
 exports.me = async (req, res) => {
   try {
     if (!req.userId) return res.status(401).json({ message: 'Not authenticated' });

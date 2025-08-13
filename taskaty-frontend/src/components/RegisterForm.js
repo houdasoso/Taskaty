@@ -6,11 +6,10 @@ export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Regular registration (optional because login auto-registers)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-       await api.post('/auth/register', { name, email, password });
+      await api.post('/auth/register', { name, email, password });
       alert('Registered – now you can login (or use the Login form which auto-registers)');
       setName(''); setEmail(''); setPassword('');
     } catch (err) {

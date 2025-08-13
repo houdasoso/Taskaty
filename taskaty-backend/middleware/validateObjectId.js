@@ -1,4 +1,3 @@
-// Optional middleware to validate :id params as ObjectId to avoid CastError
 const mongoose = require('mongoose');
 
 module.exports = (req, res, next) => {

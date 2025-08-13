@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
 
+// Simple task creation form. Calls POST /tasks (auth required).
 export default function TaskForm({ onCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
   const [status, setStatus] = useState('pending');
+  const [priority, setPriority] = useState('medium');
 
   const submit = async (e) => {
     e.preventDefault();
     try {
-      const payload = { title, description, status };
+      const payload = { title, description, status, priority };
       if (deadline) payload.deadline = deadline;
       await api.post('/tasks', payload);
-      setTitle(''); setDescription(''); setDeadline(''); setStatus('pending');
+      setTitle(''); setDescription(''); setDeadline(''); setStatus('pending'); setPriority('medium');
       if (onCreated) onCreated();
+      // optionally refresh tasks by emitting custom event or state
+      window.dispatchEvent(new Event('tasks:refresh'));
     } catch (err) {
       console.error('Create task failed:', err.response?.data || err.message);
       alert(err.response?.data?.message || 'Create failed');
@@ -23,6 +27,7 @@ export default function TaskForm({ onCreated }) {
 
   return (
     <form onSubmit={submit} className="card card-body mb-3">
+      <h5>Create Task</h5>
       <div className="mb-2">
         <input className="form-control" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} required />
       </div>
@@ -40,6 +45,13 @@ export default function TaskForm({ onCreated }) {
             <option value="completed">Completed</option>
           </select>
         </div>
+      </div>
+      <div className="mb-2">
+        <select className="form-select" value={priority} onChange={e=>setPriority(e.target.value)}>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
       </div>
       <button className="btn btn-primary">Add Task</button>
     </form>
